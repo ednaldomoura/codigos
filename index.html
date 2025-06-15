@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Códigos yFood</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados se precisar de algo que o Tailwind não cubra diretamente */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 to-purple-800 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-2xl transform transition-all duration-300 hover:scale-105 fade-in">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-8">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+                Gestão de Códigos yFood
+            </span>
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div>
+                <label for="apartamento" class="block text-gray-700 text-sm font-semibold mb-2">Apartamento</label>
+                <input type="text" id="apartamento" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" placeholder="Ex: 101A">
+            </div>
+            <div>
+                <label for="nome" class="block text-gray-700 text-sm font-semibold mb-2">Nome</label>
+                <input type="text" id="nome" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" placeholder="Ex: João da Silva">
+            </div>
+            <div>
+                <label for="codigo" class="block text-gray-700 text-sm font-semibold mb-2">Número do Código</label>
+                <input type="text" id="codigo" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" placeholder="Ex: YF2025-123">
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+            <button onclick="adicionarCodigo()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75">
+                Adicionar Código
+            </button>
+            <button onclick="exibirCodigos()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+                Visualizar Todos os Códigos
+            </button>
+        </div>
+
+        <div class="mb-8">
+            <label for="busca" class="block text-gray-700 text-sm font-semibold mb-2">Buscar por Apartamento ou Nome</label>
+            <input type="text" id="busca" onkeyup="exibirCodigos()" class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" placeholder="Digite para buscar...">
+        </div>
+
+        <div id="listaCodigos" class="mt-8 border-t border-gray-200 pt-6">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center">Códigos Cadastrados</h2>
+            <ul id="ulCodigos" class="space-y-4">
+                </ul>
+            <p id="noCodigosMessage" class="text-center text-gray-500 text-lg mt-4">Nenhum código cadastrado ainda.</p>
+            <p id="noResultsMessage" class="text-center text-gray-500 text-lg mt-4 hidden">Nenhum resultado encontrado para a busca.</p>
+        </div>
+    </div>
+
+    <script>
+        const ulCodigos = document.getElementById('ulCodigos');
+        const noCodigosMessage = document.getElementById('noCodigosMessage');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const campoBusca = document.getElementById('busca');
+        let codigos = JSON.parse(localStorage.getItem('codigosYFood')) || [];
+
+        function exibirCodigos() {
+            ulCodigos.innerHTML = '';
+            noCodigosMessage.style.display = 'none';
+            noResultsMessage.style.display = 'none';
+
+            const termoBusca = campoBusca.value.toLowerCase().trim();
+            const codigosFiltrados = codigos.filter(item => {
+                return item.apartamento.toLowerCase().includes(termoBusca) ||
+                       item.nome.toLowerCase().includes(termoBusca);
+            });
+
+            if (codigos.length === 0) {
+                noCodigosMessage.style.display = 'block';
+                return;
+            }
+
+            if (codigosFiltrados.length === 0 && termoBusca !== '') {
+                noResultsMessage.style.display = 'block';
+                return;
+            }
+
+            codigosFiltrados.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'bg-white p-4 rounded-lg shadow-md flex items-center justify-between transition-all duration-200 hover:shadow-lg hover:scale-[1.02] fade-in';
+                li.innerHTML = `
+                    <div>
+                        <p class="text-lg font-semibold text-gray-800">Apto: <span class="text-purple-600">${item.apartamento}</span></p>
+                        <p class="text-md text-gray-600">Nome: <span class="font-medium">${item.nome}</span></p>
+                        <p class="text-md text-gray-600">Código: <span class="font-medium text-indigo-600">${item.codigo}</span></p>
+                    </div>
+                    <button onclick="excluirCodigo(${codigos.indexOf(item)})" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
+                        Excluir
+                    </button>
+                `;
+                ulCodigos.appendChild(li);
+            });
+        }
+
+        function adicionarCodigo() {
+            const apartamento = document.getElementById('apartamento').value.trim();
+            const nome = document.getElementById('nome').value.trim();
+            const codigo = document.getElementById('codigo').value.trim();
+
+            if (!apartamento || !nome || !codigo) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+
+            const novoCodigo = { apartamento, nome, codigo };
+            codigos.push(novoCodigo);
+            localStorage.setItem('codigosYFood', JSON.stringify(codigos));
+            exibirCodigos(); // Atualiza a lista após adicionar
+            
+            document.getElementById('apartamento').value = '';
+            document.getElementById('nome').value = '';
+            document.getElementById('codigo').value = '';
+            campoBusca.value = ''; // Limpa o campo de busca
+            alert('Código adicionado com sucesso!');
+        }
+
+        function excluirCodigo(index) {
+            if (confirm('Tem certeza que deseja excluir este código?')) {
+                codigos.splice(index, 1);
+                localStorage.setItem('codigosYFood', JSON.stringify(codigos));
+                exibirCodigos(); // Atualiza a lista após excluir
+                alert('Código excluído com sucesso!');
+            }
+        }
+
+        // Exibir os códigos salvos ao carregar a página
+        document.addEventListener('DOMContentLoaded', exibirCodigos);
+    </script>
+</body>
+</html>
